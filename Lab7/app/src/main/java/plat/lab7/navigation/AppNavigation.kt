@@ -187,13 +187,8 @@ fun NavGraphBuilder.charactersGraph(
             )
         }
 
-        composable<CharacterDetailsDestination> { backStackEntry ->
-            val details =
-                backStackEntry
-                    .toRoute<CharacterDetailsDestination>()
-
+        composable<CharacterDetailsDestination> {
             CharacterDetailsScreen(
-                id = details.id,
                 onBack = onBack
             )
         }
@@ -213,13 +208,8 @@ fun NavGraphBuilder.locationsGraph(
             )
         }
 
-        composable<LocationDetailsDestination> { backStackEntry ->
-            val details =
-                backStackEntry
-                    .toRoute<LocationDetailsDestination>()
-
+        composable<LocationDetailsDestination> {
             LocationDetailsScreen(
-                id = details.id,
                 onBack = onBack
             )
         }
