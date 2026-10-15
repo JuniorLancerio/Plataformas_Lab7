@@ -1,3 +1,4 @@
+
 package plat.lab7.ui.login
 
 import androidx.compose.foundation.Image
@@ -8,10 +9,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -23,22 +30,36 @@ import plat.lab7.ui.theme.Lab7Theme
 
 @Composable
 fun LoginScreen(
-    onStart: () -> Unit
+    onLogin: (String) -> Unit
+) {
+    var name by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    LoginContent(
+        name = name,
+        onNameChange = { name = it },
+        onLogin = {
+            if (name.isNotBlank()) {
+                onLogin(name.trim())
+            }
+        }
+    )
+}
+
+@Composable
+fun LoginContent(
+    name: String,
+    onNameChange: (String) -> Unit,
+    onLogin: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(
-                horizontal = 32.dp,
-                vertical = 24.dp
-            ),
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+        verticalArrangement = Arrangement.Center
     ) {
-        Spacer(
-            modifier = Modifier.height(1.dp)
-        )
-
         Image(
             painter = painterResource(
                 id = R.drawable.rick_morty_logo
@@ -46,23 +67,37 @@ fun LoginScreen(
             contentDescription = "Rick and Morty logo",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .widthIn(max = 260.dp),
             contentScale = ContentScale.Fit
         )
 
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            label = {
+                Text("Nombre")
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
         Button(
-            onClick = onStart,
+            onClick = onLogin,
+            enabled = name.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(48.dp)
         ) {
-            Text("Empezar")
+            Text("Iniciar sesión")
         }
-
-        Text(
-            text = "Junior Lancerio - 25789",
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }
 
@@ -73,8 +108,25 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     Lab7Theme {
-        LoginScreen(
-            onStart = {}
+        LoginContent(
+            name = "",
+            onNameChange = {},
+            onLogin = {}
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+fun LoginScreenFilledPreview() {
+    Lab7Theme {
+        LoginContent(
+            name = "Junior Lancerio",
+            onNameChange = {},
+            onLogin = {}
         )
     }
 }

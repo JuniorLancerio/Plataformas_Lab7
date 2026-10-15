@@ -1,3 +1,4 @@
+
 package plat.lab7.ui.profile
 
 import androidx.compose.foundation.Image
@@ -27,6 +28,7 @@ import plat.lab7.ui.theme.Lab7Theme
 
 @Composable
 fun ProfileScreen(
+    userName: String,
     onLogout: () -> Unit
 ) {
     Column(
@@ -56,7 +58,7 @@ fun ProfileScreen(
 
         ProfileInfoRow(
             label = "Nombre:",
-            value = "Junior Lancerio"
+            value = userName
         )
 
         Spacer(
@@ -109,6 +111,7 @@ private fun ProfileInfoRow(
 fun ProfileScreenPreview() {
     Lab7Theme {
         ProfileScreen(
+            userName = "Junior Lancerio",
             onLogout = {}
         )
     }

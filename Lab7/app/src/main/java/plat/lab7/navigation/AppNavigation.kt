@@ -1,18 +1,26 @@
 package plat.lab7.navigation
 
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import plat.lab7.ui.characters.CharacterDetailsScreen
 import plat.lab7.ui.characters.CharactersScreen
 import plat.lab7.ui.components.AppBottomNavigation
@@ -21,21 +29,54 @@ import plat.lab7.ui.locations.LocationDetailsScreen
 import plat.lab7.ui.locations.LocationsScreen
 import plat.lab7.ui.login.LoginScreen
 import plat.lab7.ui.profile.ProfileScreen
+import plat.lab7.viewmodel.SessionViewModel
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    sessionViewModel: SessionViewModel = viewModel()
+) {
     val navController = rememberNavController()
+    val sessionState by sessionViewModel.uiState.collectAsStateWithLifecycle()
 
     NavHost(
         navController = navController,
-        startDestination = LoginDestination
+        startDestination = SplashDestination
     ) {
+        composable<SplashDestination> {
+            LaunchedEffect(sessionState.isLoading) {
+                if (!sessionState.isLoading) {
+                    val destination = if (sessionState.userName != null) {
+                        MainDestination
+                    } else {
+                        LoginDestination
+                    }
+
+                    navController.navigate(destination) {
+                        popUpTo<SplashDestination> {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
         composable<LoginDestination> {
             LoginScreen(
-                onStart = {
-                    navController.navigate(MainDestination) {
-                        popUpTo<LoginDestination> {
-                            inclusive = true
+                onLogin = { name ->
+                    sessionViewModel.login(name) {
+                        navController.navigate(MainDestination) {
+                            popUpTo<LoginDestination> {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
                         }
                     }
                 }
@@ -48,36 +89,26 @@ fun AppNavigation() {
             val currentBackStackEntry by
             mainNavController.currentBackStackEntryAsState()
 
-            val currentDestination =
-                currentBackStackEntry?.destination
+            val currentDestination = currentBackStackEntry?.destination
 
             val isCharacterDetails =
-                currentDestination
-                    ?.hasRoute<CharacterDetailsDestination>() == true
+                currentDestination?.hasRoute<CharacterDetailsDestination>() == true
 
             val isLocationDetails =
-                currentDestination
-                    ?.hasRoute<LocationDetailsDestination>() == true
+                currentDestination?.hasRoute<LocationDetailsDestination>() == true
 
-            val showBottomBar =
-                !isCharacterDetails && !isLocationDetails
+            val showBottomBar = !isCharacterDetails && !isLocationDetails
 
             val selectedDestination = when {
-                currentDestination
-                    ?.hasRoute<LocationsGraph>() == true ||
-                        currentDestination
-                            ?.hasRoute<LocationsDestination>() == true -> {
-                    BottomDestination.Locations
-                }
+                currentDestination?.hasRoute<LocationsDestination>() == true ||
+                        currentDestination?.hierarchy?.any {
+                            it.hasRoute<LocationsGraph>()
+                        } == true -> BottomDestination.Locations
 
-                currentDestination
-                    ?.hasRoute<ProfileDestination>() == true -> {
+                currentDestination?.hasRoute<ProfileDestination>() == true ->
                     BottomDestination.Profile
-                }
 
-                else -> {
-                    BottomDestination.Characters
-                }
+                else -> BottomDestination.Characters
             }
 
             Scaffold(
@@ -86,36 +117,30 @@ fun AppNavigation() {
                         AppBottomNavigation(
                             selectedDestination = selectedDestination,
                             onCharactersClick = {
-                                mainNavController.navigate(
-                                    CharactersGraph
-                                ) {
+                                mainNavController.navigate(CharactersGraph) {
+                                    popUpTo(mainNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
                                     launchSingleTop = true
-
-                                    popUpTo(
-                                        mainNavController.graph.startDestinationId
-                                    )
+                                    restoreState = true
                                 }
                             },
                             onLocationsClick = {
-                                mainNavController.navigate(
-                                    LocationsGraph
-                                ) {
+                                mainNavController.navigate(LocationsGraph) {
+                                    popUpTo(mainNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
                                     launchSingleTop = true
-
-                                    popUpTo(
-                                        mainNavController.graph.startDestinationId
-                                    )
+                                    restoreState = true
                                 }
                             },
                             onProfileClick = {
-                                mainNavController.navigate(
-                                    ProfileDestination
-                                ) {
+                                mainNavController.navigate(ProfileDestination) {
+                                    popUpTo(mainNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
                                     launchSingleTop = true
-
-                                    popUpTo(
-                                        mainNavController.graph.startDestinationId
-                                    )
+                                    restoreState = true
                                 }
                             }
                         )
@@ -130,9 +155,7 @@ fun AppNavigation() {
                     charactersGraph(
                         onCharacterClick = { id ->
                             mainNavController.navigate(
-                                CharacterDetailsDestination(
-                                    id = id
-                                )
+                                CharacterDetailsDestination(id)
                             )
                         },
                         onBack = {
@@ -143,9 +166,7 @@ fun AppNavigation() {
                     locationsGraph(
                         onLocationClick = { id ->
                             mainNavController.navigate(
-                                LocationDetailsDestination(
-                                    id = id
-                                )
+                                LocationDetailsDestination(id)
                             )
                         },
                         onBack = {
@@ -155,14 +176,14 @@ fun AppNavigation() {
 
                     composable<ProfileDestination> {
                         ProfileScreen(
+                            userName = sessionState.userName.orEmpty(),
                             onLogout = {
-                                navController.navigate(
-                                    LoginDestination
-                                ) {
-                                    popUpTo(
-                                        navController.graph.id
-                                    ) {
-                                        inclusive = true
+                                sessionViewModel.logout {
+                                    navController.navigate(LoginDestination) {
+                                        popUpTo<MainDestination> {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
                                     }
                                 }
                             }

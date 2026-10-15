@@ -32,3 +32,5 @@ data class LocationDetailsDestination(
 
 @Serializable
 object ProfileDestination
+@Serializable
+object SplashDestination
