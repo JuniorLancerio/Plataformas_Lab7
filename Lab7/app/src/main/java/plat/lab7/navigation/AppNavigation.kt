@@ -70,6 +70,8 @@ fun AppNavigation(
 
         composable<LoginDestination> {
             LoginScreen(
+                isSyncing = sessionState.isSyncing,
+                hasError = sessionState.hasError,
                 onLogin = { name ->
                     sessionViewModel.login(name) {
                         navController.navigate(MainDestination) {

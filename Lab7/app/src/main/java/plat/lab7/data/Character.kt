@@ -1,3 +1,4 @@
+
 package plat.lab7.data
 
 data class Character(
@@ -6,5 +7,6 @@ data class Character(
     val status: String,
     val species: String,
     val gender: String,
-    val image: String
+    val image: String,
+    val isFavorite: Boolean = false
 )

@@ -1,4 +1,3 @@
-
 package plat.lab7.ui.characters
 
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +47,7 @@ fun CharacterDetailsScreen(
     CharacterDetailsContent(
         uiState = uiState,
         onBack = onBack,
+        onFavoriteClick = characterDetailsViewModel::toggleFavorite,
         onLoadingClick = characterDetailsViewModel::showError,
         onRetry = characterDetailsViewModel::loadCharacter
     )
@@ -56,6 +58,7 @@ fun CharacterDetailsScreen(
 fun CharacterDetailsContent(
     uiState: CharacterDetailsUiState,
     onBack: () -> Unit,
+    onFavoriteClick: () -> Unit,
     onLoadingClick: () -> Unit,
     onRetry: () -> Unit
 ) {
@@ -66,7 +69,9 @@ fun CharacterDetailsContent(
                     Text("Characters details")
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -81,6 +86,7 @@ fun CharacterDetailsContent(
             )
         }
     ) { paddingValues ->
+
         when {
             uiState.hasError -> {
                 ErrorScreen(
@@ -107,7 +113,9 @@ fun CharacterDetailsContent(
                         .padding(horizontal = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(
+                        modifier = Modifier.height(32.dp)
+                    )
 
                     CharacterImage(
                         image = character.image,
@@ -115,15 +123,46 @@ fun CharacterDetailsContent(
                         size = 220.dp
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = character.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
+                    Spacer(
+                        modifier = Modifier.height(20.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = character.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        IconButton(
+                            onClick = onFavoriteClick
+                        ) {
+                            Icon(
+                                imageVector = if (character.isFavorite) {
+                                    Icons.Filled.Favorite
+                                } else {
+                                    Icons.Outlined.FavoriteBorder
+                                },
+                                contentDescription = if (character.isFavorite) {
+                                    "Quitar de favoritos"
+                                } else {
+                                    "Agregar a favoritos"
+                                },
+                                tint = if (character.isFavorite) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(40.dp)
+                    )
 
                     CharacterDetailsInfoRow(
                         label = "Species:",
@@ -178,6 +217,7 @@ fun CharacterDetailsLoadingPreview() {
                 isLoading = true
             ),
             onBack = {},
+            onFavoriteClick = {},
             onLoadingClick = {},
             onRetry = {}
         )
@@ -194,6 +234,7 @@ fun CharacterDetailsErrorPreview() {
                 hasError = true
             ),
             onBack = {},
+            onFavoriteClick = {},
             onLoadingClick = {},
             onRetry = {}
         )
@@ -210,6 +251,26 @@ fun CharacterDetailsDataPreview() {
                 data = CharacterDb().getCharacterById(1)
             ),
             onBack = {},
+            onFavoriteClick = {},
+            onLoadingClick = {},
+            onRetry = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CharacterDetailsFavoritePreview() {
+    Lab7Theme {
+        CharacterDetailsContent(
+            uiState = CharacterDetailsUiState(
+                isLoading = false,
+                data = CharacterDb()
+                    .getCharacterById(1)
+                    .copy(isFavorite = true)
+            ),
+            onBack = {},
+            onFavoriteClick = {},
             onLoadingClick = {},
             onRetry = {}
         )

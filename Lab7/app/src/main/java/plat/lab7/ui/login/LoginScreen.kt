@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -30,6 +31,8 @@ import plat.lab7.ui.theme.Lab7Theme
 
 @Composable
 fun LoginScreen(
+    isSyncing: Boolean,
+    hasError: Boolean,
     onLogin: (String) -> Unit
 ) {
     var name by rememberSaveable {
@@ -39,8 +42,10 @@ fun LoginScreen(
     LoginContent(
         name = name,
         onNameChange = { name = it },
+        isSyncing = isSyncing,
+        hasError = hasError,
         onLogin = {
-            if (name.isNotBlank()) {
+            if (name.isNotBlank() && !isSyncing) {
                 onLogin(name.trim())
             }
         }
@@ -51,6 +56,8 @@ fun LoginScreen(
 fun LoginContent(
     name: String,
     onNameChange: (String) -> Unit,
+    isSyncing: Boolean,
+    hasError: Boolean,
     onLogin: () -> Unit
 ) {
     Column(
@@ -82,6 +89,7 @@ fun LoginContent(
                 Text("Nombre")
             },
             singleLine = true,
+            enabled = !isSyncing,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -91,12 +99,50 @@ fun LoginContent(
 
         Button(
             onClick = onLogin,
-            enabled = name.isNotBlank(),
+            enabled = name.isNotBlank() && !isSyncing,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
         ) {
-            Text("Iniciar sesión")
+            Text(
+                text = if (isSyncing) {
+                    "Sincronizando..."
+                } else {
+                    "Iniciar sesión"
+                }
+            )
+        }
+
+        if (isSyncing) {
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
+            Text(
+                text = "Guardando personajes y ubicaciones...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (hasError) {
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            Text(
+                text = "Error al sincronizar los datos. Intenta de nuevo.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
@@ -111,6 +157,8 @@ fun LoginScreenPreview() {
         LoginContent(
             name = "",
             onNameChange = {},
+            isSyncing = false,
+            hasError = false,
             onLogin = {}
         )
     }
@@ -121,11 +169,47 @@ fun LoginScreenPreview() {
     showSystemUi = true
 )
 @Composable
-fun LoginScreenFilledPreview() {
+fun LoginFilledPreview() {
     Lab7Theme {
         LoginContent(
             name = "Junior Lancerio",
             onNameChange = {},
+            isSyncing = false,
+            hasError = false,
+            onLogin = {}
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+fun LoginSyncingPreview() {
+    Lab7Theme {
+        LoginContent(
+            name = "Junior Lancerio",
+            onNameChange = {},
+            isSyncing = true,
+            hasError = false,
+            onLogin = {}
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+fun LoginErrorPreview() {
+    Lab7Theme {
+        LoginContent(
+            name = "Junior Lancerio",
+            onNameChange = {},
+            isSyncing = false,
+            hasError = true,
             onLogin = {}
         )
     }

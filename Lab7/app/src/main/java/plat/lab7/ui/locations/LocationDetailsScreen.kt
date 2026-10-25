@@ -28,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import plat.lab7.data.LocationDb
+import plat.lab7.data.Location
 import plat.lab7.ui.components.ErrorScreen
 import plat.lab7.ui.components.LoadingScreen
 import plat.lab7.ui.theme.Lab7Theme
@@ -203,6 +203,8 @@ fun LocationDetailsErrorPreview() {
     }
 }
 
+
+
 @Preview(
     showBackground = true,
     showSystemUi = true
@@ -213,7 +215,12 @@ fun LocationDetailsDataPreview() {
         LocationDetailsContent(
             uiState = LocationDetailsUiState(
                 isLoading = false,
-                data = LocationDb().getLocationById(1)
+                data = Location(
+                    id = 1,
+                    name = "Earth (C-137)",
+                    type = "Planet",
+                    dimension = "Dimension C-137"
+                )
             ),
             onBack = {},
             onLoadingClick = {},
